@@ -1,0 +1,176 @@
+version: 2
+
+models:
+
+  # ─── stg_movies ──────────────────────────────────────────────────────────────
+  - name: stg_movies
+    description: >
+      Silver layer movies model. One row per movie-genre combination.
+      Movies with no valid genre have a single row with genre = NULL.
+      IMAX is promoted to a boolean column rather than treated as a genre.
+    columns:
+      - name: movie_id
+        description: "Unique movie identifier (sourced from movieId in Bronze)."
+        data_tests:
+          - not_null
+
+      - name: title
+        description: "Movie title with the year suffix removed."
+        data_tests:
+          - not_null
+
+      - name: year_movie
+        description: "Release year extracted from the original title field. NULL if no year was present."
+
+      - name: is_imax
+        description: "TRUE if the movie was tagged with IMAX in the source genres field."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+      - name: genre
+        description: >
+          Individual genre for this row. NULL for movies that had '(no genres listed)'
+          or only had IMAX as their tag. One row per genre per movie.
+
+  # ─── stg_ratings ─────────────────────────────────────────────────────────────
+  - name: stg_ratings
+    description: >
+      Unified Silver ratings table. UNION of user_rating_history and
+      user_additional_rating. One row per user-movie rating event.
+    columns:
+      - name: user_id
+        description: "User identifier (BIGINT)."
+        data_tests:
+          - not_null
+
+      - name: movie_id
+        description: "Movie identifier (BIGINT)."
+        data_tests:
+          - not_null
+
+      - name: rating
+        description: "Score given by the user (DOUBLE, 0.5 to 5.0)."
+        data_tests:
+          - not_null
+
+      - name: rated_at
+        description: "Timestamp of when the rating was submitted (converted from Unix epoch)."
+        data_tests:
+          - not_null
+
+      - name: rated_date
+        description: "Date portion of rated_at."
+
+      - name: source_table
+        description: "Source table lineage: 'rating_history' or 'additional_rating'."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['rating_history', 'additional_rating']
+
+  # ─── stg_beliefs ─────────────────────────────────────────────────────────────
+  - name: stg_beliefs
+    description: >
+      Silver layer belief_data model. One row per user-movie belief record.
+      Contains user predictions, actual ratings (when seen), system predictions,
+      and confidence scores. isSeen is mapped to a readable string label.
+    columns:
+      - name: user_id
+        description: "User identifier (BIGINT)."
+        data_tests:
+          - not_null
+
+      - name: movie_id
+        description: "Movie identifier (BIGINT)."
+        data_tests:
+          - not_null
+
+      - name: is_seen_label
+        description: "Whether the user has seen the movie: 'seen', 'not_seen', or 'no_response'."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['seen', 'not_seen', 'no_response', 'unknown']
+
+      - name: watch_date
+        description: "Approximate date the user watched the movie. NULL unless is_seen_label = 'seen'."
+
+      - name: user_elicit_rating
+        description: "Actual rating reported by the user for a seen movie (0.5–5.0). NULL if not seen."
+
+      - name: user_predict_rating
+        description: "Rating the user predicts they would give an unseen movie (0.5–5.0)."
+
+      - name: system_predict_rating
+        description: "Rating predicted by the recommendation system for this user-movie pair."
+
+      - name: user_certainty
+        description: "User's confidence in their prediction (INT, 1–5)."
+
+      - name: recorded_at
+        description: "Timestamp of when the belief record was created."
+        data_tests:
+          - not_null
+
+      - name: month_idx
+        description: "Experiment month index when the movie was included in the elicitation set."
+
+      - name: source_group
+        description: "Integer source group code (1–5) for the movie in this elicitation cycle."
+
+  # ─── stg_elicitation_set ─────────────────────────────────────────────────────
+  - name: stg_elicitation_set
+    description: >
+      Silver layer movie_elicitation_set model. One row per movie-month combination
+      used to solicit prediction from users. Source group mapped to a readable label.
+    columns:
+      - name: movie_id
+        description: "Movie identifier (BIGINT)."
+        data_tests:
+          - not_null
+
+      - name: month_idx
+        description: "Month index of the experiment the movie was part of."
+        data_tests:
+          - not_null
+
+      - name: source_label
+        description: "Selection group label: popularity, highly_rated, popular_recent, trending, serendipity."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['popularity', 'highly_rated', 'popular_recent', 'trending', 'serendipity', 'unknown']
+
+      - name: presented_at
+        description: "Timestamp of when the movie was presented to users."
+
+  # ─── stg_recommendations ─────────────────────────────────────────────────────
+  - name: stg_recommendations
+    description: >
+      Silver layer user_recommendation_history model. One row per
+      system recommendation event (user, movie, predicted rating).
+    columns:
+      - name: user_id
+        description: "User identifier (BIGINT)."
+        data_tests:
+          - not_null
+
+      - name: movie_id
+        description: "Movie identifier (BIGINT)."
+        data_tests:
+          - not_null
+
+      - name: predicted_rating
+        description: "Rating predicted by the recommendation system (DOUBLE, 0.5–5.0)."
+
+      - name: recommended_at
+        description: "Timestamp of when the recommendation was made."
+        data_tests:
+          - not_null
+

@@ -1,0 +1,104 @@
+version: 2
+
+sources:
+  - name: bronze
+    catalog: netflix
+    schema: 01_bronze
+    description: "Raw Bronze layer ingested via DLT from the volume CSV files."
+    tables:
+
+      - name: br_movies
+        description: "Raw movies table from the MovieLens CSV file (movies.csv)."
+        columns:
+          - name: movieId
+            description: "Unique movie identifier."
+          - name: title
+            description: "Movie title, including year in format (YYYY)."
+          - name: genres
+            description: "Pipe-separated list of genres. May contain IMAX, '(no genres listed)', or be NULL."
+          - name: _rescued_data
+            description: "DLT rescue column — non-null rows indicate malformed source records."
+
+      - name: br_user_rating_history
+        description: "History of real ratings provided by users for movies they have already watched (user_rating_history.csv)."
+        columns:
+          - name: userId
+            description: "User identifier."
+          - name: movieId
+            description: "Identifier of the rated movie."
+          - name: rating
+            description: "Score given by the user (0.5 to 5.0 stars)."
+          - name: tstamp
+            description: "Unix timestamp of when the rating was submitted."
+          - name: _rescued_data
+            description: "DLT rescue column."
+
+      - name: br_ratings_for_additional_users
+        description: "Additional ratings collected outside the main rating history (user_additional_rating.csv)."
+        columns:
+          - name: userId
+            description: "User identifier."
+          - name: movieId
+            description: "Identifier of the rated movie."
+          - name: rating
+            description: "Score given by the user (0.5 to 5.0 stars)."
+          - name: tstamp
+            description: "Unix timestamp of when the rating was submitted."
+          - name: _rescued_data
+            description: "DLT rescue column."
+
+      - name: br_belief_data
+        description: "Primary belief table — records what users believe they would rate a movie, before or after watching it (belief_data.csv)."
+        columns:
+          - name: userId
+            description: "User identifier."
+          - name: movieId
+            description: "Movie identifier."
+          - name: isSeen
+            description: "Whether the user has seen the movie: -1=no response, 0=not seen, 1=seen."
+          - name: watchDate
+            description: "Approximate date the user watched the movie (only when isSeen=1)."
+          - name: userElicitRating
+            description: "Actual rating reported by the user for a movie they have seen."
+          - name: userPredictRating
+            description: "Rating the user predicts they would give to an unseen movie."
+          - name: userCertainty
+            description: "User's confidence in their prediction (1 to 5)."
+          - name: tstamp
+            description: "Unix timestamp of when the belief record was created."
+          - name: month_idx
+            description: "Month index of the experiment when the movie was included."
+          - name: source
+            description: "Selection group the movie was chosen from (1–5)."
+          - name: systemPredictRating
+            description: "Rating predicted by the recommendation system for this user-movie pair."
+          - name: _rescued_data
+            description: "DLT rescue column."
+
+      - name: br_movie_elicitation_set
+        description: "List of movies used to solicit rating predictions from users (movie_elicitation_set.csv)."
+        columns:
+          - name: movieId
+            description: "Movie identifier."
+          - name: month_idx
+            description: "Month the movie was part of the elicitation set."
+          - name: source
+            description: "Selection group: 1=Popularity, 2=Highly rated, 3=Popular recent, 4=Trending, 5=Serendipity."
+          - name: tstamp
+            description: "Unix timestamp of when the movie was presented."
+          - name: _rescued_data
+            description: "DLT rescue column."
+
+      - name: br_user_recommendation_history
+        description: "History of movies recommended by the system to users (user_recommendation_history.csv)."
+        columns:
+          - name: userId
+            description: "User identifier."
+          - name: tstamp
+            description: "Unix timestamp of the recommendation."
+          - name: movieId
+            description: "Identifier of the recommended movie."
+          - name: predictedRating
+            description: "Rating the recommendation system predicted for this user-movie pair."
+          - name: _rescued_data
+            description: "DLT rescue column."

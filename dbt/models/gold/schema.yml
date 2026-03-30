@@ -1,0 +1,179 @@
+version: 2
+
+models:
+
+  # ─── gold_genre_ratings ───────────────────────────────────────────────────────
+  - name: gold_genre_ratings
+    description: >
+      Gold model: average real user rating per genre.
+      One row per genre. Includes rating statistics, distinct movies/users count,
+      and percentage of high ratings (≥4.0). Ordered by avg_rating descending.
+    columns:
+      - name: genre
+        description: "Movie genre label."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: total_ratings
+        description: "Total number of user ratings for this genre."
+        data_tests:
+          - not_null
+
+      - name: distinct_movies
+        description: "Number of unique movies in this genre with at least one rating."
+
+      - name: distinct_users
+        description: "Number of unique users who rated movies in this genre."
+
+      - name: avg_rating
+        description: "Average user rating across all movies in this genre (0.5–5.0)."
+        data_tests:
+          - not_null
+
+      - name: min_rating
+        description: "Minimum rating given for any movie in this genre."
+
+      - name: max_rating
+        description: "Maximum rating given for any movie in this genre."
+
+      - name: stddev_rating
+        description: "Standard deviation of ratings for this genre."
+
+      - name: pct_high_ratings
+        description: "Percentage of ratings ≥4.0 stars for this genre."
+
+  # ─── gold_user_belief_accuracy ────────────────────────────────────────────────
+  - name: gold_user_belief_accuracy
+    description: >
+      Gold model: per-user belief accuracy. Measures how well each user predicts
+      their own ratings for movies they have seen. Requires both user_predict_rating
+      and user_elicit_rating to be present. Ordered by mean_absolute_error ascending
+      (best predictors first).
+    columns:
+      - name: user_id
+        description: "User identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: rated_movies_count
+        description: "Number of seen movies used to compute accuracy metrics."
+        data_tests:
+          - not_null
+
+      - name: mean_absolute_error
+        description: "Average absolute difference between user_predict_rating and user_elicit_rating."
+        data_tests:
+          - not_null
+
+      - name: stddev_error
+        description: "Standard deviation of prediction errors for this user."
+
+      - name: max_error
+        description: "Maximum prediction error recorded for this user."
+
+      - name: avg_certainty
+        description: "Average self-reported certainty score (1–5) for this user."
+
+      - name: pct_accurate_predictions
+        description: "Percentage of predictions within 0.5 stars of the actual rating."
+
+  # ─── gold_system_vs_actual ────────────────────────────────────────────────────
+  - name: gold_system_vs_actual
+    description: >
+      Gold model: per-movie comparison between the system's predicted rating and
+      the user's actual elicited rating. Only movies with ≥5 paired observations
+      are included. Enriched with movie title and year from stg_movies.
+    columns:
+      - name: movie_id
+        description: "Movie identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: record_count
+        description: "Number of user-movie pairs used (min 5)."
+        data_tests:
+          - not_null
+
+      - name: distinct_users
+        description: "Number of distinct users who rated this movie and had a system prediction."
+
+      - name: avg_system_pred
+        description: "Average system-predicted rating for this movie."
+
+      - name: avg_actual_rating
+        description: "Average actual user rating for this movie."
+
+      - name: mae
+        description: "Mean Absolute Error between system prediction and actual rating."
+        data_tests:
+          - not_null
+
+      - name: stddev_error
+        description: "Standard deviation of prediction errors."
+
+      - name: mean_bias
+        description: "Average signed error (positive = system over-predicted)."
+
+      - name: prediction_quality
+        description: "Quality flag: 'good' (MAE ≤0.5), 'fair' (≤1.0), or 'poor' (>1.0)."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['good', 'fair', 'poor']
+
+      - name: title
+        description: "Movie title (from stg_movies)."
+
+      - name: year_movie
+        description: "Movie release year (from stg_movies)."
+
+  # ─── gold_elicitation_source_summary ─────────────────────────────────────────
+  - name: gold_elicitation_source_summary
+    description: >
+      Gold model: aggregated belief and rating metrics per elicitation source category.
+      Shows how user engagement, confidence, and prediction accuracy vary across
+      source groups (popularity, serendipity, etc.). One row per source_label.
+    columns:
+      - name: source_label
+        description: "Elicitation source category (popularity, highly_rated, popular_recent, trending, serendipity)."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: total_belief_records
+        description: "Total belief records for this source category."
+        data_tests:
+          - not_null
+
+      - name: distinct_movies
+        description: "Number of distinct movies in this source category."
+
+      - name: distinct_users
+        description: "Number of distinct users who submitted beliefs for this category."
+
+      - name: seen_count
+        description: "Number of belief records where the user has seen the movie."
+
+      - name: not_seen_count
+        description: "Number of belief records where the user has not seen the movie."
+
+      - name: no_response_count
+        description: "Number of belief records with no isSeen response."
+
+      - name: avg_predict_rating
+        description: "Average user prediction rating for movies in this source category."
+
+      - name: avg_certainty
+        description: "Average user certainty score (1–5) for this source category."
+
+      - name: avg_actual_rating
+        description: "Average actual rating (seen movies only) for this source category."
+
+      - name: avg_system_pred
+        description: "Average system-predicted rating for this source category."
+
+      - name: avg_user_prediction_mae
+        description: "Mean absolute error of user predictions vs actual ratings (seen movies with both values)."
