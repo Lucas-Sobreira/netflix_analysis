@@ -1,0 +1,575 @@
+{
+  "datasets": [
+    {
+      "name": "1710dc2e",
+      "displayName": "gold_system_vs_actual",
+      "queryLines": [
+        "SELECT * FROM netflix.`03_gold`.gold_system_vs_actual"
+      ]
+    },
+    {
+      "name": "a2c075a4",
+      "displayName": "gold_elicitation_source_summary",
+      "queryLines": [
+        "SELECT * FROM netflix.`03_gold`.gold_elicitation_source_summary"
+      ]
+    },
+    {
+      "name": "029a2693",
+      "displayName": "gold_genre_ratings",
+      "queryLines": [
+        "SELECT * FROM netflix.`03_gold`.gold_genre_ratings"
+      ]
+    },
+    {
+      "name": "6cc147ef",
+      "displayName": "Engagement Breakdown by Cohort",
+      "queryLines": [
+        "SELECT\n",
+        "  source_label,\n",
+        "  'Seen' as response_type,\n",
+        "  seen_count as count\n",
+        "FROM\n",
+        "  netflix.`03_gold`.gold_elicitation_source_summary\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  source_label,\n",
+        "  'Not Seen' as response_type,\n",
+        "  not_seen_count as count\n",
+        "FROM\n",
+        "  netflix.`03_gold`.gold_elicitation_source_summary\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  source_label,\n",
+        "  'No Response' as response_type,\n",
+        "  no_response_count as count\n",
+        "FROM\n",
+        "  netflix.`03_gold`.gold_elicitation_source_summary"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "040b7ee6",
+      "displayName": "Algorithm Performance",
+      "layout": [
+        {
+          "widget": {
+            "name": "74965cf6",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "a2c075a4",
+                  "fields": [
+                    {
+                      "name": "source_label",
+                      "expression": "`source_label`"
+                    },
+                    {
+                      "name": "avg_system_pred",
+                      "expression": "`avg_system_pred`"
+                    },
+                    {
+                      "name": "avg_actual_rating",
+                      "expression": "`avg_actual_rating`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "System Prediction vs Actual Rating: Bias Analysis",
+                "showTitle": true
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "avg_system_pred",
+                  "displayName": "System Prediction",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg_actual_rating",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 2
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Actual Rating (User)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "source_label",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Elicitation Source",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "56facfe6",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "1710dc2e",
+                  "fields": [
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    },
+                    {
+                      "name": "prediction_quality",
+                      "expression": "`prediction_quality`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "mark": {
+                "layout": "stack"
+              },
+              "frame": {
+                "title": "Prediction Quality Distribution",
+                "showTitle": true
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "count(*)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    },
+                    "abbreviation": "compact"
+                  },
+                  "displayName": "Movie Count"
+                },
+                "color": {
+                  "fieldName": "prediction_quality",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Prediction Quality",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 5,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "2b15936f",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "1710dc2e",
+                  "fields": [
+                    {
+                      "name": "title",
+                      "expression": "`title`"
+                    },
+                    {
+                      "name": "year_movie",
+                      "expression": "`year_movie`"
+                    },
+                    {
+                      "name": "mae",
+                      "expression": "`mae`"
+                    },
+                    {
+                      "name": "avg_system_pred",
+                      "expression": "`avg_system_pred`"
+                    },
+                    {
+                      "name": "avg_actual_rating",
+                      "expression": "`avg_actual_rating`"
+                    },
+                    {
+                      "name": "mean_bias",
+                      "expression": "`mean_bias`"
+                    },
+                    {
+                      "name": "prediction_quality",
+                      "expression": "`prediction_quality`"
+                    },
+                    {
+                      "name": "record_count",
+                      "expression": "`record_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Model Performance by MAE (Top/Bottom)",
+                "showTitle": true
+              },
+              "rowsPerPage": 25,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "title",
+                    "displayName": "Movie Title"
+                  },
+                  {
+                    "fieldName": "year_movie",
+                    "displayName": "Year"
+                  },
+                  {
+                    "fieldName": "mae",
+                    "displayName": "MAE"
+                  },
+                  {
+                    "fieldName": "avg_system_pred",
+                    "displayName": "System Pred"
+                  },
+                  {
+                    "fieldName": "avg_actual_rating",
+                    "displayName": "Actual Rating"
+                  },
+                  {
+                    "fieldName": "mean_bias",
+                    "displayName": "Mean Bias"
+                  },
+                  {
+                    "fieldName": "prediction_quality",
+                    "displayName": "Prediction Quality"
+                  },
+                  {
+                    "fieldName": "record_count",
+                    "displayName": "Record Count"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 5,
+            "y": 6,
+            "width": 7,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "9fb13688",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "573ae207",
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {},
+              "frame": {
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "dea6fa6f",
+      "displayName": "User Engagement & Cohort Tracking",
+      "layout": [
+        {
+          "widget": {
+            "name": "c653aedd",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "a2c075a4",
+                  "fields": [
+                    {
+                      "name": "source_label",
+                      "expression": "`source_label`"
+                    },
+                    {
+                      "name": "total_belief_records",
+                      "expression": "`total_belief_records`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Belief Records by Elicitation Strategy",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "source_label",
+                  "displayName": "Elicitation Source",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "total_belief_records",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    },
+                    "abbreviation": "compact"
+                  },
+                  "displayName": "Total Belief Records",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "source_label",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Source",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 9
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "b1f59cc0",
+      "displayName": "Content Strategy",
+      "layout": [
+        {
+          "widget": {
+            "name": "9bf22413",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "029a2693",
+                  "fields": [
+                    {
+                      "name": "stddev_rating",
+                      "expression": "`stddev_rating`"
+                    },
+                    {
+                      "name": "genre",
+                      "expression": "`genre`"
+                    },
+                    {
+                      "name": "pct_high_ratings",
+                      "expression": "`pct_high_ratings`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Genre Ratings Heatmap",
+                "showTitle": true,
+                "showDescription": false
+              },
+              "widgetType": "heatmap",
+              "encodings": {
+                "x": {
+                  "fieldName": "genre",
+                  "displayName": "Genre",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "pct_high_ratings",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 1
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "High Ratings %",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "stddev_rating",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Rating Std Dev",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "8a39570d",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "029a2693",
+                  "fields": [
+                    {
+                      "name": "genre",
+                      "expression": "`genre`"
+                    },
+                    {
+                      "name": "total_ratings",
+                      "expression": "`total_ratings`"
+                    },
+                    {
+                      "name": "avg_rating",
+                      "expression": "`avg_rating`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "total_ratings",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg_rating",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "genre",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 12,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
